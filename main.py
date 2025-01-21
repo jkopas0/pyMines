@@ -46,7 +46,8 @@ class app:
 					x = event.pos[0] // self.gridScale
 					y = event.pos[1] // self.gridScale
 					
-					self.uncover(x, y)
+					if not self.grid[x][y]:
+						self.uncover(x, y)
 					
 			self.screen.fill("gray")
 			
@@ -160,6 +161,33 @@ class app:
 		
 		return tmp
 
+def _help():
+	print("Usage: python3 main.py [options]...")
+	print("    options:")
+	print("        -h, --help                  Show this help screen.")
+	print("        -g, --grid sizeX [sizeY]    Specify the size of the grid. (Default: 10 10)")
+	print("        -m, --mines amount          Specify the amount of mines on the grid. (Default: 10)")
+	quit(0)
+	
+def _grid():
+	try:
+		sizeX = int(sys.argv[i + 1])
+		sizeY = int(sys.argv[i + 2])
+	except (ValueError, IndexError):
+		try:
+			sizeX = int(sys.argv[i + 1])
+			sizeY = sizeX
+		except (ValueError, IndexError):
+			print("Invalid grid size.")
+			quit(-1)
+			
+def _mines():
+	try:
+		mines = int(sys.argv[i + 1])
+	except ValueError:
+		print("Invalid amount of mines.")
+		quit(-1)
+
 if __name__ == "__main__":
 	sizeX = 10
 	sizeY = 10
@@ -168,58 +196,22 @@ if __name__ == "__main__":
 	for i in range(len(sys.argv)):
 		match sys.argv[i]:
 			case "--help":
-				print("Usage: python3 main.py [options]...")
-				print("    options:")
-				print("        -h, --help                  Show this help screen.")
-				print("        -g, --grid sizeX [sizeY]    Specify the size of the grid. (Default: 10 10)")
-				print("        -m, --mines amount          Specify the amount of mines on the grid. (Default: 10)")
-				quit(0)
+				_help()
 			
 			case "-h":
-				print("Usage: python3 main.py [options]...")
-				print("    options:")
-				print("        -h, --help                  Show this help screen.")
-				print("        -g, --grid sizeX [sizeY]    Specify the size of the grid. (Default: 10 10)")
-				print("        -m, --mines amount          Specify the amount of mines on the grid. (Default: 10)")
-				quit(0)
+				_help()
 			
 			case "--grid":
-				try:
-					sizeX = int(sys.argv[i + 1])
-					sizeY = int(sys.argv[i + 2])
-				except (ValueError, IndexError):
-					try:
-						sizeX = int(sys.argv[i + 1])
-						sizeY = sizeX
-					except (ValueError, IndexError):
-						print("Invalid grid size.")
-						quit(-1)
+				_grid()
 			
 			case "-g":
-				try:
-					sizeX = int(sys.argv[i + 1])
-					sizeY = int(sys.argv[i + 2])
-				except (ValueError, IndexError):
-					try:
-						sizeX = int(sys.argv[i + 1])
-						sizeY = sizeX
-					except (ValueError, IndexError):
-						print("Invalid grid size.")
-						quit(-1)
+				_grid()
 			
 			case "--mines":
-				try:
-					mines = int(sys.argv[i + 1])
-				except ValueError:
-					print("Invalid amount of mines.")
-					quit(-1)
+				_mines()
 			
 			case "-m":
-				try:
-					mines = int(sys.argv[i + 1])
-				except ValueError:
-					print("Invalid amount of mines.")
-					quit(-1)
+				_mines()
 					
 	if mines > sizeX * sizeY:
 		print("More mines than cells in grid.")
