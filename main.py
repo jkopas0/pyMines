@@ -23,7 +23,7 @@ class app:
 		for x in range(0, self.sizeX):
 			self.grid.append([])
 			for y in range(0, self.sizeY):
-				self.grid[x].append(False)
+				self.grid[x].append(0)
 				
 		self.field = self.gridSetEmpty()
 		self.field = self.generateMines()
@@ -33,6 +33,7 @@ class app:
 		
 		self.running = True
 		self.dead = False
+		self.win = False
 		
 		self.main()
 		
@@ -43,12 +44,21 @@ class app:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					self.running = False
-				elif event.type == pygame.MOUSEBUTTONDOWN and not self.dead:
-					x = event.pos[0] // self.gridScale
-					y = event.pos[1] // self.gridScale
+				elif event.type == pygame.MOUSEBUTTONDOWN and not self.dead and not self.win:
+					if event.button == 1:
+						x = event.pos[0] // self.gridScale
+						y = event.pos[1] // self.gridScale
 					
-					if not self.grid[x][y]:
-						self.uncover(x, y)
+						if self.grid[x][y] == 0:
+							self.uncover(x, y)
+					if event.button == 3:
+						x = event.pos[0] // self.gridScale
+						y = event.pos[1] // self.gridScale
+					
+						if self.grid[x][y] == 0:
+							self.grid[x][y] = -1
+						elif self.grid[x][y] == -1:
+							self.grid[x][y] = 0
 					
 			self.screen.fill("gray")
 			
@@ -56,8 +66,18 @@ class app:
 				for y in range(self.sizeY):
 					rect = pygame.Rect(x * self.gridScale, y * self.gridScale, self.gridScale, self.gridScale)
 					
-					if not self.grid[x][y]:
+					if self.grid[x][y] == 0:
 						pygame.draw.rect(self.screen, "darkgray", rect, 3)
+					elif self.grid[x][y] == -1:
+						pygame.draw.rect(self.screen, "yellow", rect, 3)
+						txt = self.font.render('!', True, "yellow")
+						txtRect = txt.get_rect(center=rect.center)
+						self.screen.blit(txt, txtRect)
+					elif self.grid[x][y] == -2:
+						pygame.draw.rect(self.screen, "red", rect, 3)
+						txt = self.font.render('!', True, "red")
+						txtRect = txt.get_rect(center=rect.center)
+						self.screen.blit(txt, txtRect)
 					elif self.field[x][y] != 9:
 						pygame.draw.rect(self.screen, "darkgreen", rect, 3)
 						txt = self.font.render(str(self.field[x][y]), True, "black")
@@ -69,9 +89,22 @@ class app:
 						txtRect = txt.get_rect(center=rect.center)
 						self.screen.blit(txt, txtRect)
 						
-			if self.dead:
-				rect = pygame.Rect(x * self.gridScale, y * self.gridScale, self.gridScale, self.gridScale)
+			if self.dead and not self.win:
 				txt = self.font.render("You died!", True, "black")
+				txtRect = txt.get_rect(center=self.screen.get_rect().center)
+				pygame.draw.rect(self.screen, "darkgray", txtRect, 0)
+				self.screen.blit(txt, txtRect)
+				
+			unchecked = 0
+			
+			for x in range(self.sizeX):
+				for y in range(self.sizeY):
+					if self.grid[x][y] == 0 or self.grid[x][y] == -1:
+						unchecked += 1
+						
+			if unchecked == self.mines and not self.dead:
+				self.win = True
+				txt = self.font.render("You win!", True, "black")
 				txtRect = txt.get_rect(center=self.screen.get_rect().center)
 				pygame.draw.rect(self.screen, "darkgray", txtRect, 0)
 				self.screen.blit(txt, txtRect)
@@ -81,38 +114,41 @@ class app:
 			self.clock.tick(60)
 			
 	def uncover(self, x, y):
-		self.grid[x][y] = True
+		self.grid[x][y] = 1
 		
 		if self.field[x][y] == 0:
 			if x != 0:
 				if y != 0:
-					if not self.grid[x - 1][y - 1]:
+					if self.grid[x - 1][y - 1] == 0:
 						self.uncover(x - 1, y - 1)
 				if y != self.sizeY - 1:
-					if not self.grid[x - 1][y + 1]:
+					if self.grid[x - 1][y + 1] == 0:
 						self.uncover(x - 1, y + 1)
-				if not self.grid[x - 1][y]:
+				if self.grid[x - 1][y] == 0:
 					self.uncover(x - 1, y)
 			if x != self.sizeX - 1:
 				if y != 0:
-					if not self.grid[x + 1][y - 1]:
+					if self.grid[x + 1][y - 1] == 0:
 						self.uncover(x + 1, y - 1)
 				if y != self.sizeY - 1:
-					if not self.grid[x + 1][y + 1]:
+					if self.grid[x + 1][y + 1] == 0:
 						self.uncover(x + 1, y + 1)
-				if not self.grid[x + 1][y]:
+				if self.grid[x + 1][y] == 0:
 					self.uncover(x + 1, y)
 			if y != 0:
-				if not self.grid[x][y - 1]:
+				if self.grid[x][y - 1] == 0:
 					self.uncover(x, y - 1)
 			if y != self.sizeY - 1:
-				if not self.grid[x][y + 1]:
+				if self.grid[x][y + 1] == 0:
 					self.uncover(x, y + 1)
 		elif self.field[x][y] == 9:
 			for _x in range(self.sizeX):
 				for _y in range(self.sizeY):
 					if self.field[_x][_y] == 9:
-						self.grid[_x][_y] = True
+						if self.grid[_x][_y] == 0:
+							self.grid[_x][_y] = 1
+						elif self.grid[_x][_y] == -1:
+							self.grid[_x][_y] = -2
 			self.dead = True
 			
 	def gridSetEmpty(self):
