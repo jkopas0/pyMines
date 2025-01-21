@@ -180,10 +180,12 @@ def _grid():
 		except (ValueError, IndexError):
 			print("Invalid grid size.")
 			quit(-1)
+	return (sizeX, sizeY)
 			
 def _mines():
 	try:
 		mines = int(sys.argv[i + 1])
+		return mines
 	except ValueError:
 		print("Invalid amount of mines.")
 		quit(-1)
@@ -202,16 +204,16 @@ if __name__ == "__main__":
 				_help()
 			
 			case "--grid":
-				_grid()
+				sizeX, sizeY = _grid()
 			
 			case "-g":
-				_grid()
+				sizeX, sizeY = _grid()
 			
 			case "--mines":
-				_mines()
+				mines = _mines()
 			
 			case "-m":
-				_mines()
+				mines = _mines()
 					
 	if mines > sizeX * sizeY:
 		print("More mines than cells in grid.")
