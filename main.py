@@ -32,6 +32,7 @@ class app:
 		pygame.display.set_caption(f"grid: {self.sizeX}x{self.sizeY}, mines: {self.mines}")
 		
 		self.running = True
+		self.dead = False
 		
 		self.main()
 		
@@ -42,7 +43,7 @@ class app:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					self.running = False
-				elif event.type == pygame.MOUSEBUTTONDOWN:
+				elif event.type == pygame.MOUSEBUTTONDOWN and not self.dead:
 					x = event.pos[0] // self.gridScale
 					y = event.pos[1] // self.gridScale
 					
@@ -67,6 +68,13 @@ class app:
 						txt = self.font.render('*', True, "red")
 						txtRect = txt.get_rect(center=rect.center)
 						self.screen.blit(txt, txtRect)
+						
+			if self.dead:
+				rect = pygame.Rect(x * self.gridScale, y * self.gridScale, self.gridScale, self.gridScale)
+				txt = self.font.render("You died!", True, "black")
+				txtRect = txt.get_rect(center=self.screen.get_rect().center)
+				pygame.draw.rect(self.screen, "darkgray", txtRect, 0)
+				self.screen.blit(txt, txtRect)
 			
 			pygame.display.flip()
 			
@@ -105,6 +113,7 @@ class app:
 				for _y in range(self.sizeY):
 					if self.field[_x][_y] == 9:
 						self.grid[_x][_y] = True
+			self.dead = True
 			
 	def gridSetEmpty(self):
 		tmp = []
